@@ -2,6 +2,7 @@ package com.example.todolist11;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,10 +16,11 @@ public class AddNoteActivity extends AppCompatActivity {
     private RadioButton rb_low;
     private RadioButton rb_medium;
     private Button btn_save;
+    private final Database database = Database.getInstance();
 
     @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-        super.onPointerCaptureChanged(hasCapture);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.add_note);
         initViews();
 
@@ -26,7 +28,6 @@ public class AddNoteActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 saveNote();
-
             }
         });
     }
@@ -36,12 +37,15 @@ public class AddNoteActivity extends AppCompatActivity {
         rb_low = findViewById(R.id.rb_low);
         rb_medium = findViewById(R.id.rb_medium);
         btn_save = findViewById(R.id.btn_save);
-    }
-
+        }
 
     private void saveNote() {
         String text = editTextNote.getText().toString().trim();
         int priority = getPriority();
+        int id = database.getNotes().size();
+        Note note = new Note(id, text, priority);
+        database.add(note);
+        onBackPressed();
     }
 
     private int getPriority() {
@@ -56,9 +60,7 @@ public class AddNoteActivity extends AppCompatActivity {
         return priority;
     }
 
-    public static Intent newIntent(Context context){
-        Intent intent = new Intent(context, AddNoteActivity.class);
-        return intent;
+    public static Intent newIntent(Context context) {
+        return new Intent(context, AddNoteActivity.class);
     }
 }
-

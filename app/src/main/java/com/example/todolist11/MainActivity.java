@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout linearLayout;
     private FloatingActionButton button;
 
-    private ArrayList<Note> notes = new ArrayList<>();
+    private Database database = Database.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,20 +29,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initViews();
-        Random random = new Random();
-        for (int i = 0; i < 20; i++) {
-            Note note = new Note(i, "Note " + i, random.nextInt(3));
-            notes.add(note);
-        }
-        showNotes();
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = AddNoteActivity.newIntent(MainActivity.this);
+                Intent intent = new Intent(MainActivity.this, AddNoteActivity.class);
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showNotes();
     }
 
     protected void initViews() {
@@ -51,12 +51,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void showNotes() {
-        for (Note note : notes) {
+        linearLayout.removeAllViews();
+        for (Note note : database.getNotes()) {
             View view = getLayoutInflater().inflate(
                     R.layout.note_item,
                     linearLayout,
                     false
             );
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    database.remove(note.getId());
+                    showNotes();
+                }
+            });
+
             TextView textViewNote = view.findViewById(R.id.textViewNote);
             textViewNote.setText(note.getText());
 

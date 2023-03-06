@@ -13,9 +13,8 @@
         android:theme="@style/Theme.ToDoList11"
         tools:targetApi="31">
         <activity
-            android:name=".AddNoteActivity"
+            android:name=".MainActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,7 +25,10 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <activity android:name=".MainActivity"></activity>
+        <activity
+            android:name=".AddNoteActivity"
+            android:exported="true" />
+
     </application>
 
 </manifest>
