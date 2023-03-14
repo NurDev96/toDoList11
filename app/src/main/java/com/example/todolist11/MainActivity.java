@@ -2,14 +2,19 @@ package com.example.todolist11;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,15 +23,22 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton button;
     private NotesAdapter notesAdapter;
 
-    private Database database = Database.getInstance();
+    private MainViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        viewModel = new MainViewModel(getApplication()); ///
         initViews();
         notesAdapter = new NotesAdapter();
+
+        viewModel.getNotes().observe(this, new Observer<List<Note>>() {
+            @Override
+            public void onChanged(List<Note> notes) {
+                notesAdapter.setNotes(notes);
+            }
+        });
 
         notesAdapter.setOnNoteClickListener(new NotesAdapter.OnNoteClickListener() {
             @Override
@@ -54,8 +66,7 @@ public class MainActivity extends AppCompatActivity {
                     ) {
                         int position = viewHolder.getAdapterPosition();
                         Note note = notesAdapter.getNotes().get(position);
-                        database.remove(note.getId());
-                        showNotes();
+                        viewModel.remove(note);
                     }
                 }
         );
@@ -72,18 +83,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        showNotes();
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        showNotes();
+//    }
 
     protected void initViews() {
         recyclerView = findViewById(R.id.recyclerView);
         button = findViewById(R.id.buttonAddNote);
     }
 
-    protected void showNotes() {
-        notesAdapter.setNotes(database.getNotes());
-    }
+//    protected void showNotes() {
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                List<Note> notes = noteDatabase.notesDao().getNotes();
+//                handler.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        notesAdapter.setNotes(noteDatabase.notesDao().getNotes());
+//
+//                    }
+//                });
+//            }
+//        });
+//        thread.start();
+//    }
 }
