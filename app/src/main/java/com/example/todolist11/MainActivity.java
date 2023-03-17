@@ -3,6 +3,7 @@ package com.example.todolist11;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,8 +12,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -29,8 +32,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        viewModel = new MainViewModel(getApplication()); ///
+        viewModel = new ViewModelProvider(this).get(MainViewModel.class); ///
+
         initViews();
+
         notesAdapter = new NotesAdapter();
 
         viewModel.getNotes().observe(this, new Observer<List<Note>>() {
@@ -40,12 +45,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        notesAdapter.setOnNoteClickListener(new NotesAdapter.OnNoteClickListener() {
-            @Override
-            public void onNoteClick(Note note) {
-            }
-        });
-
+        recyclerView.setAdapter(notesAdapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
                 new ItemTouchHelper.SimpleCallback(
                         0,
@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         );
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
-        recyclerView.setAdapter(notesAdapter);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
