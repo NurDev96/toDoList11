@@ -1,6 +1,7 @@
 package com.example.todolist11;
 
 import android.app.Application;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -14,6 +15,7 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class AddNoteViewModel extends AndroidViewModel {
@@ -33,26 +35,34 @@ public class AddNoteViewModel extends AndroidViewModel {
     }
 
     public void saveNote(Note note) {
-        Disposable disposable = addRX(note)
+        Disposable disposable =  notesDao.add(note)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action() {
-                    @Override
-                    public void run() throws Throwable {
-                        shouldCloseScreen.setValue(true);
-                    }
-                });
+                .subscribe(
+                        new Action() {
+                            @Override
+                            public void run() throws Throwable {
+                                shouldCloseScreen.setValue(true);
+                            }
+                        },
+                        new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Throwable {
+                                Log.d("AddNoteViewModel", "AddNoteViewModel: Error");
+                            }
+                        });
         compositeDisposable.add(disposable);
     }
 
-    private Completable addRX(Note note) {
-        return Completable.fromAction(new Action() {
-            @Override
-            public void run() throws Throwable {
-                notesDao.add(note);
-            }
-        });
-    }
+//    private Completable addRX(Note note) {
+//        return Completable.fromAction(
+//                new Action() {
+//                    @Override
+//                    public void run() throws Throwable {
+//                        notesDao.add(note);
+//                    }
+//                });
+//    }
 
     @Override
     protected void onCleared() {

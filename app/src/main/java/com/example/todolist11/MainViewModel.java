@@ -24,7 +24,6 @@ public class MainViewModel extends AndroidViewModel {
 
     private NoteDatabase noteDatabase;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private MutableLiveData notes = new MutableLiveData<>();
 
 
     public MainViewModel(@NonNull Application application) {
@@ -33,53 +32,61 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Note>> getNotes() {
-        return notes;
+        return noteDatabase.notesDao().getNotes();
     }
 
-    public void refreshList() {
-        Disposable disposable = getNotesRx()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<Note>>() {
-                    @Override
-                    public void accept(List<Note> notesFromDB) throws Throwable {
-                        notes.setValue(notesFromDB);
-                    }
-                });
-        compositeDisposable.add(disposable);
-    }
+//    public void refreshList() {
+//        Disposable disposable = getNotesRx()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<List<Note>>() {
+//                    @Override
+//                    public void accept(List<Note> notesFromDB) throws Throwable {
+//                        notes.setValue(notesFromDB);
+//                    }
+//                });
+//        compositeDisposable.add(disposable);
+//    }
 
-    private Single<List<Note>> getNotesRx() {
-        return Single.fromCallable(new Callable<List<Note>>() {
-            @Override
-            public List<Note> call() throws Exception {
-                return noteDatabase.notesDao().getNotes();
-            }
-        });
-    }
+//    private Single<List<Note>> getNotesRx() {
+//        return Single.fromCallable(new Callable<List<Note>>() {
+//            @Override
+//            public List<Note> call() throws Exception {
+//                //return noteDatabase.notesDao().getNotes();
+//                throw new Exception();
+//            }
+//        });
+//    }
 
     public void remove(Note note) {
-        Disposable disposable = removeRx(note)
+        Disposable disposable = noteDatabase.notesDao().remove(note.getId())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action() {
-                    @Override
-                    public void run() throws Throwable {
-                        Log.d("MainVM", "Remove: " + note.getId());
-                        refreshList();
-                    }
-                });
+                .subscribe(
+                        new Action() {
+                            @Override
+                            public void run() throws Throwable {
+                                Log.d("MainVM", "Remove: " + note.getId());
+                            }
+                        },
+                        new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Throwable {
+                                Log.d("MainViewModel", "MainViewModel: Error");
+                            }
+                        });
         compositeDisposable.add(disposable);
     }
 
-    private Completable removeRx(Note note) {
-        return Completable.fromAction(new Action() {
-            @Override
-            public void run() throws Throwable {
-                noteDatabase.notesDao().remove(note.getId());
-            }
-        });
-    }
+//    private Completable removeRx(Note note) {
+//        return Completable.fromAction(
+//                new Action() {
+//                    @Override
+//                    public void run() throws Throwable {
+//                        noteDatabase.notesDao().remove(note.getId());
+//                    }
+//                });
+//    }
 
     @Override
     protected void onCleared() {
